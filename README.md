@@ -1,4 +1,4 @@
-# Narmada EarthMC Verification Bot
+# Narmada EarthMC Verification Bot 
 
 Discord bot for automatic EarthMC account verification.
 
