@@ -25,6 +25,7 @@ Wraps EarthMC HTTP requests. Discord code should not build raw JSON payloads or 
 
 - Discord ID -> Minecraft UUID
 - Minecraft UUID -> player payload
+- global EarthMC request throttling and 429 backoff handling
 
 ### `bot/database.py`
 

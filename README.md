@@ -57,6 +57,7 @@ DISCORD_TOKEN=your_bot_token
 GUILD_ID=123456789012345678
 VERIFIED_ROLE_NAME=EarthMC Verified
 EARTHMC_API=https://api.earthmc.net/v3/aurora
+EARTHMC_REQUESTS_PER_MINUTE=30
 RETRY_INTERVAL_HOURS=24
 STAFF_ROLE=Moderator
 VERIFY_COOLDOWN_SECONDS=60
@@ -69,11 +70,18 @@ Notes:
 - `GUILD_ID`: the numeric ID of the Discord server the bot should manage
 - `VERIFIED_ROLE_NAME`: role granted after successful EarthMC verification
 - `EARTHMC_API`: EarthMC API base URL; Aurora is the current value used by this bot
+- `EARTHMC_REQUESTS_PER_MINUTE`: global EarthMC request cap used by the bot; default is `30`
 - `RETRY_INTERVAL_HOURS`: how often the bot retries unverified members; default is `24`
 - `STAFF_ROLE`: optional Discord role that can run `/verify_all` and verify other members with `/verify`
 - `VERIFY_COOLDOWN_SECONDS`: per-user manual `/verify` cooldown; default is `60`
 - `VERIFY_ALL_COOLDOWN_SECONDS`: manual `/verify_all` cooldown; default is `900` seconds
 - If Discord rejects login with `401 Unauthorized`, the token in `DISCORD_TOKEN` is invalid or expired
+
+Rate-limit note:
+
+- As of March 17, 2026, EarthMC's public API docs at `https://earthmc.net/docs/api` do not publish a numeric rate limit.
+- A live header check against `https://api.earthmc.net/v3/aurora/` also did not expose `X-RateLimit-*` headers.
+- This bot therefore defaults to a conservative inferred cap of `30` requests per minute, sends requests serially, and respects `Retry-After` if EarthMC returns `429 Too Many Requests`.
 
 ## Run
 
@@ -99,6 +107,7 @@ python -m bot.bot
 - If EarthMC returns a Minecraft UUID, the bot calls `POST /players` to fetch the player's IGN.
 - The bot adds the verified role and tries to set the member nickname to that IGN.
 - If nickname updates fail because of Discord permissions, the bot logs the failure and continues.
+- All EarthMC requests are serialized through one shared limiter so join events, slash commands, and retries cannot spike the API at once.
 - Manual `/verify` requests are rate-limited per target user to reduce spam.
 - Manual `/verify_all` requests are rate-limited globally.
 - On startup, the bot schedules a retry job and runs the first retry about one minute later.

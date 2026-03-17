@@ -109,9 +109,13 @@ class VerificationBot(discord.Client):
         user_id = self.user.id if self.user else "unknown"
         logger.info("Logged in as %s (%s)", self.user, user_id)
         logger.info(
-            "Commands synced to guild %s; retry interval is every %s hours; staff role is %s",
+            (
+                "Commands synced to guild %s; retry interval is every %s hours; "
+                "EarthMC request limit is %s per minute; staff role is %s"
+            ),
             self.settings.guild_id,
             self.settings.retry_interval_hours,
+            self.settings.earthmc_requests_per_minute,
             self.settings.staff_role_name or "disabled",
         )
 
@@ -503,7 +507,10 @@ def main() -> None:
     client = VerificationBot(
         settings=settings,
         repository=repository,
-        earthmc_api=EarthMCApiClient(settings.earthmc_api),
+        earthmc_api=EarthMCApiClient(
+            settings.earthmc_api,
+            requests_per_minute=settings.earthmc_requests_per_minute,
+        ),
         intents=intents,
     )
     client.run(settings.discord_token)
